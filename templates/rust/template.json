@@ -1,0 +1,7 @@
+{
+  "task": {
+    "program": ["main.rs"],
+    "submit": "main.rs",
+    "testdir": "test"
+  }
+}

@@ -6,6 +6,7 @@ services:
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
+        LANGUAGES: ${LANGUAGES:-cpp,python}
     working_dir: /work/contests
     volumes:
       - ./contests:/work/contests

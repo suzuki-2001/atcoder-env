@@ -3,6 +3,9 @@ FROM ubuntu:24.04
 ARG UID=1000
 ARG GID=1000
 ARG DEBIAN_FRONTEND=noninteractive
+# Languages to install. cpp/python are always available; c is covered by
+# build-essential. Add go/rust by passing e.g. LANGUAGES=cpp,python,go,rust.
+ARG LANGUAGES=cpp,python
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -30,6 +33,20 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 RUN git clone --depth 1 https://github.com/atcoder/ac-library.git /opt/ac-library
 ENV CPLUS_INCLUDE_PATH=/opt/ac-library
+
+RUN if echo ",$LANGUAGES," | grep -q ',go,'; then \
+        apt-get update && apt-get install -y --no-install-recommends golang-go \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
+
+ENV RUSTUP_HOME=/opt/rust \
+    CARGO_HOME=/opt/rust \
+    PATH=/opt/rust/bin:$PATH
+RUN if echo ",$LANGUAGES," | grep -q ',rust,'; then \
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+          | sh -s -- -y --default-toolchain stable --profile minimal --no-modify-path \
+        && chmod -R a+rX /opt/rust; \
+    fi
 
 RUN npm install -g atcoder-cli
 

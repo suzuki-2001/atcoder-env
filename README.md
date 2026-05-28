@@ -82,16 +82,38 @@ contests/
 
 ## Templates
 
-Edit `templates/cpp/main.cpp` or `templates/py/main.py` directly — they're mounted into the container and copied into `acc`'s config dir on every container start. Run `make restart` to pick up edits.
+Edit `templates/<lang>/main.*` directly — they're mounted into the container and copied into `acc`'s config dir on every container start. Run `make restart` to pick up edits.
 
 Add a new template by dropping `templates/<name>/{template.json, main.<ext>}`.
 
-Default template: `cpp`. Switch per-call with `T=py`, or globally via `DEFAULT_TEMPLATE` in `docker-compose.yml`.
+Default template: `cpp`. Switch per-call with `T=py` (or `c`, `go`, `rust`), or globally via `DEFAULT_TEMPLATE` in `docker-compose.yml`.
+
+## Languages
+
+Default image ships **C++ and Python**. Add others at build time:
+
+```sh
+LANGUAGES=cpp,python,c,go,rust make build
+```
+
+| Lang | Toolchain | Template |
+|---|---|---|
+| C++ | g++ 13 (always; AC Library on `CPLUS_INCLUDE_PATH`) | `templates/cpp/main.cpp` |
+| Python | 3.12 (always) | `templates/py/main.py` |
+| C | gcc 13 (always; bundled with build-essential) | `templates/c/main.c` |
+| Go | apt `golang-go` (opt-in via `LANGUAGES=...,go`) | `templates/go/main.go` |
+| Rust | rustup stable, minimal profile, `/opt/rust` (opt-in via `LANGUAGES=...,rust`) | `templates/rust/main.rs` |
+
+`make test` auto-detects `main.{cpp,py,c,go,rs}` in the task directory.
 
 ## What's in the image
 
 - Ubuntu 24.04, g++ 13, Python 3.12, Node 20
-- `atcoder-cli` (npm) + `online-judge-tools` + `aclogin` (pip, with `--break-system-packages`)
+- `atcoder-cli` (npm) + `online-judge-tools` + `aclogin` (pip, `--break-system-packages`)
 - AC Library at `/opt/ac-library` (added to `CPLUS_INCLUDE_PATH`)
 - MiB patch applied to `onlinejudge/service/atcoder.py` at build time
-- Default compile flags for `make test`: `g++ -std=gnu++20 -O2 -DLOCAL`
+- Compile flags used by `make test`:
+  - C++: `g++ -std=gnu++20 -O2 -DLOCAL`
+  - C: `gcc -std=c17 -O2 -DLOCAL -lm`
+  - Go: `go build`
+  - Rust: `rustc -O`

@@ -1,0 +1,7 @@
+{
+  "task": {
+    "program": ["main.go"],
+    "submit": "main.go",
+    "testdir": "test"
+  }
+}

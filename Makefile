@@ -9,7 +9,7 @@ endif
 HOST_UID := $(shell id -u)
 HOST_GID := $(shell id -g)
 COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo "docker-compose")
-DC   := env UID=$(HOST_UID) GID=$(HOST_GID) $(COMPOSE)
+DC   := env UID=$(HOST_UID) GID=$(HOST_GID) $(if $(LANGUAGES),LANGUAGES=$(LANGUAGES),) $(COMPOSE)
 EXEC := $(DC) exec atcoder
 PY   := $(EXEC) python3 /work/scripts/atcoder_api.py
 
@@ -64,8 +64,8 @@ shell:   ## bash inside the container
 status:  ## container status
 	$(DC) ps
 
-new:     ## make new <contest> [task]   [T=cpp|py] [CHOICE=all|manual|next|rest|none]
-	@test -n "$(word 1,$(ARGS))" || { echo "usage: make new <contest> [task]   [T=cpp|py] [CHOICE=...]"; exit 1; }
+new:     ## make new <contest> [task]   [T=cpp|py|c|go|rust] [CHOICE=all|manual|next|rest|none]
+	@test -n "$(word 1,$(ARGS))" || { echo "usage: make new <contest> [task]   [T=cpp|py|c|go|rust] [CHOICE=...]"; exit 1; }
 	@$(call SAFE_PATH,$(word 1,$(ARGS)))
 	@$(if $(word 2,$(ARGS)),$(call SAFE_PATH,$(word 2,$(ARGS))))
 	@$(PY) precheck
@@ -82,16 +82,16 @@ new:     ## make new <contest> [task]   [T=cpp|py] [CHOICE=all|manual|next|rest|
 	  done; \
 	fi
 
-test:    ## make test <contest>/<task>   (cpp/py auto-detected)
+test:    ## make test <contest>/<task>   (auto-detects main.{cpp,py,c,go,rs})
 	@test -n "$(word 1,$(ARGS))" || { echo "usage: make test <contest>/<task>"; exit 1; }
 	@$(call SAFE_PATH,$(word 1,$(ARGS)))
 	$(EXEC) sh -c 'cd "/work/contests/$(word 1,$(ARGS))" && \
-	  if [ -f main.cpp ]; then \
-	    g++ -std=gnu++20 -O2 -DLOCAL -o a.out main.cpp && oj t -c ./a.out; \
-	  elif [ -f main.py ]; then \
-	    oj t -c "python3 main.py"; \
-	  else \
-	    echo "no main.cpp or main.py in $(word 1,$(ARGS))"; exit 1; \
+	  if   [ -f main.cpp ]; then g++ -std=gnu++20 -O2 -DLOCAL -o a.out main.cpp && oj t -c ./a.out; \
+	  elif [ -f main.py  ]; then oj t -c "python3 main.py"; \
+	  elif [ -f main.c   ]; then gcc -std=c17 -O2 -DLOCAL -lm -o a.out main.c && oj t -c ./a.out; \
+	  elif [ -f main.go  ]; then go build -o a.out main.go && oj t -c ./a.out; \
+	  elif [ -f main.rs  ]; then rustc -O main.rs -o a.out && oj t -c ./a.out; \
+	  else echo "no main.{cpp,py,c,go,rs} in $(word 1,$(ARGS))"; exit 1; \
 	  fi'
 
 submit:  ## make submit <contest>/<task>
