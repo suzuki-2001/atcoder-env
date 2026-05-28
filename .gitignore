@@ -1,0 +1,30 @@
+# Solutions are kept out of version control by default; commit explicitly if you want a snapshot.
+contests/*
+!contests/.gitkeep
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*~
+\#*\#
+.\#*
+
+# Build artifacts
+*.out
+*.exe
+*.obj
+*.class
+a.out
+
+# Python
+__pycache__/
+*.pyc
+
+# Local environment (keep .env.example tracked)
+.env
+.env.local
+!.env.example
+
+# Claude Code artifacts
+.claude/
+CLAUDE.md

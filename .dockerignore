@@ -1,0 +1,7 @@
+.git/
+.gitignore
+.dockerignore
+contests/
+*.md
+.claude/
+CLAUDE.md

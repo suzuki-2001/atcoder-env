@@ -1,0 +1,26 @@
+services:
+  atcoder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    working_dir: /work/contests
+    volumes:
+      - ./contests:/work/contests
+      - ./templates:/work/templates:ro
+      - ./scripts:/work/scripts:ro
+      - acc-session:/home/atcoder/.config/atcoder-cli-nodejs
+      - oj-session:/home/atcoder/.local/share/online-judge-tools
+    environment:
+      DEFAULT_TEMPLATE: ${DEFAULT_TEMPLATE:-cpp}
+      DEFAULT_TASK_CHOICE: ${DEFAULT_TASK_CHOICE:-all}
+      ATCODER_USER: ${ATCODER_USER:-}
+    stdin_open: true
+    tty: true
+    command: sleep infinity
+
+volumes:
+  acc-session:
+  oj-session:
